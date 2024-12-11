@@ -1,0 +1,6 @@
+.env
+*.csv
+*.txt
+logs/
+gt_dataset/
+exps/
