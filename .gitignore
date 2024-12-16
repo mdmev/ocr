@@ -4,3 +4,5 @@
 logs/
 gt_dataset/
 exps/
+test.py
+utils/__pycache__/*

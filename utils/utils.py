@@ -9,22 +9,20 @@ def get_list(folder):
     return [os.path.join(folder, img) for img in os.listdir(folder) 
             if os.path.isfile(os.path.join(folder, img)) and img.lower().endswith(exts)]
 
-def save_to_csv(file_path, data, mode='a'):
+def save_to_csv(file_path, data, headers, mode='a'):
     """
-    Save incoming data to a CSV file
+    Save incoming data to a CSV file in a modular way
     """
     file_exists = os.path.isfile(file_path)
     with open(file_path, mode=mode, newline='') as file:
         writer = csv.writer(file)
 
+        # Write headers only if the file does not exist or mode is 'w'
         if not file_exists or mode == 'w':
-            writer.writerow(["image", "candidate", "json", "type"])
+            writer.writerow(headers)
 
-        for folder, images in data.items():
-            for image_name, info in images.items():
-                class_answer = info.get("class_answer", "")
-                answer = info.get("answer", "")
-                writer.writerow([folder, image_name, class_answer, answer])
+        for row in data:
+            writer.writerow(row)
 
 def calculate_metrics(results_csv, pairs_candidates_folder="pairs_candidates", sources_traductor_folder="filtered_sources_traductor") -> None:
     """

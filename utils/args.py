@@ -2,11 +2,11 @@ import argparse
 
 class Arguments:
     @staticmethod
-    def parse_arguments():
+    def parse_arguments() -> argparse.Namespace:
         parser = argparse.ArgumentParser()
         
         parser.add_argument(
-            "--model", type=str, default="sonnet",
+            "--model", type=str, default="sonnet", options=["sonnet"],
             help="Model to use for inference. Options: 'sonnet', 'gpt'"
         )
         parser.add_argument(
@@ -20,7 +20,7 @@ class Arguments:
             help="Path to the sources traductor folder."
         )
         parser.add_argument(
-            "--output_csv", type=str, default="processed_images.csv",
+            "--output_csv", type=str, default="metadata.csv",
             help="Path to the output CSV file."
         )
         parser.add_argument(

@@ -2,8 +2,12 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
+from typing import Dict, Any, Tuple
+import logging
 
-class _Image:
+logger = logging.getLogger(__name__)
+
+class Image_:
     TARGET_ASPECT_RATIOS = {
         "1:1": (1092, 1092),
         "3:4": (951, 1268),
@@ -12,19 +16,21 @@ class _Image:
         "1:2": (784, 1568),
     }
 
-    def __init__(self, path):
-        self.path = path
-        self.image = Image.open(path)
-        self.size = self.image.size
-        self.format = self.image.format
+    def __init__(self, path: str):
+        self.path: str = path
+        self.image: Image.Image = Image.open(path)
+        self.size: Tuple[int, int] = self.image.size
+        self.format: str = self.image.format
 
 
-    def rotate(self, rotation):
+    def rotate(self, rotation: float) -> 'Image_':
+        logger.debug("Rotating image %s by %f degrees", self.path, rotation)
         self.image = self.image.rotate(-rotation, expand=True)
         self.size = self.image.size
         return self
 
-    def crop(self, corners):
+    def crop(self, corners: Dict[str, float]) -> 'Image_':
+        logger.debug("Cropping image %s with corners: %s", self.path, corners)
         width, height = self.size
         x1 = int(corners['x1'] * width)
         y1 = int(corners['y1'] * height)
@@ -58,21 +64,19 @@ class _Image:
         plt.axis("off")
         plt.show()
     
-    def get_type(self):
-        if self.format is None:
-            raise ValueError("Image format is not set. Unable to determine MIME type.")
+    def get_type(self) -> str:
         return f"image/{self.format.lower()}"
 
-    def get_base64(self):
+    def get_base64(self) -> str:
         buffer = BytesIO()
         self.image.save(buffer, format=self.format)
         buffer.seek(0)
         return base64.standard_b64encode(buffer.read()).decode("utf-8")
 
-    def _calculate_aspect_ratio(self):
+    def _calculate_aspect_ratio(self) -> float:
         return self.size[0] / self.size[1]
 
-    def _find_closest_aspect_ratio(self):
+    def _find_closest_aspect_ratio(self) -> Tuple[str, Tuple[int, int]]:
         original_ratio = self._calculate_aspect_ratio()
 
         closest_ratio = None
@@ -91,7 +95,8 @@ class _Image:
 
         return closest_ratio, closest_dimensions
 
-    def resize_aspect_ratio(self):
+    def resize_aspect_ratio(self) -> 'Image_':
+        logger.debug("Resizing image %s to closest aspect ratio", self.path)
         _, target_dimensions = self._find_closest_aspect_ratio()
         target_width, target_height = target_dimensions
 
