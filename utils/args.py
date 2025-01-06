@@ -6,26 +6,21 @@ class Arguments:
         parser = argparse.ArgumentParser()
         
         parser.add_argument(
-            "--model", type=str, default="sonnet", options=["sonnet"],
-            help="Model to use for inference. Options: 'sonnet', 'gpt'"
+            "--model", type=str, default="sonnet",
+            help="Model to use for inference. Options: 'sonnet', 'gpt', 'yolo'"
         )
         parser.add_argument(
-            "--ground_truth_data", type=str,
-            default="json_gt.csv",
+            "--dataset", type=str,
+            default="datasets/SPA_NHT",
             help="Path to the folder containing the ground truth data for the JSON extract data"
         )
         parser.add_argument(
-            "--sources_traductor", type=str,
-            default="/home/guillfa/CENIA/sources-traductor",
-            help="Path to the sources traductor folder."
+            "--output", type=str, default="test.json",
+            help="Path to the output JSON file."
         )
         parser.add_argument(
-            "--output_csv", type=str, default="metadata.csv",
-            help="Path to the output CSV file."
-        )
-        parser.add_argument(
-            "--prompt_type", type=str, default="Classifier",
-            help="Prompt type for the model. Options: 'Classifier'."
+            "--prompt_type", type=str, default="nahuatl",
+            help="Prompt type for the model."
         )
 
         return parser.parse_args()

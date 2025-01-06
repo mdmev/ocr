@@ -2,7 +2,11 @@
 *.csv
 *.txt
 logs/
-gt_dataset/
+datasets/
 exps/
 test.py
 utils/__pycache__/*
+models/__pycache__/*
+weights/
+*.json
+test/

@@ -50,11 +50,12 @@ class ClaudeAPI(BaseAPI):
                 ]
             )
             duration = time.time() - start_time
-            if self.tool:
-                return self._clean_output(message.content[0].text)
+            # if self.tool:
+            #     return self._clean_output(message.content[0].text)
             if duration > timeout:
                 raise TimeoutError(f"Inference exceeded timeout ({timeout}s).")
             self.last_message = message
+            return message.content[0].text
             return self._clean_output(message.content[0].text)
 
         except Exception as e:

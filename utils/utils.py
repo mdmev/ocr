@@ -1,13 +1,30 @@
 import os
 import csv
-
+import json
 def get_list(folder):
     """
     Get a list of images from a folder
     """
-    exts = ('.png', '.jpg', '.jpeg', '.bmp', '.gif', '.tiff', '.webp')
+    exts = ('.png', '.jpg', '.jpeg', '.bmp', '.tiff', '.webp')
     return [os.path.join(folder, img) for img in os.listdir(folder) 
             if os.path.isfile(os.path.join(folder, img)) and img.lower().endswith(exts)]
+
+def load_json(file_path: str) -> dict:
+    """
+    Loads JSON from file_path if it exists, or returns an empty dict otherwise.
+    """
+    if os.path.exists(file_path):
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return {}
+
+def save_json(file_path: str, data: dict) -> None:
+    """
+    Saves the given data dict to file_path as JSON.
+    """
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
 
 def save_to_csv(file_path, data, headers, mode='a'):
     """

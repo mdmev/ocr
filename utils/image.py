@@ -4,6 +4,8 @@ import base64
 from io import BytesIO
 from typing import Dict, Any, Tuple
 import logging
+import numpy as np
+import cv2
 
 logger = logging.getLogger(__name__)
 
@@ -16,11 +18,11 @@ class Image_:
         "1:2": (784, 1568),
     }
 
-    def __init__(self, path: str):
-        self.path: str = path
-        self.image: Image.Image = Image.open(path)
+    def __init__(self, path: str = None, image: Image.Image = None):
+        self.image: Image.Image = self._load_image(path, image)
         self.size: Tuple[int, int] = self.image.size
-        self.format: str = self.image.format
+        self.format: str = self.image.format if self.image.format else "PNG"
+        self.path: str = path
 
 
     def rotate(self, rotation: float) -> 'Image_':
@@ -52,6 +54,15 @@ class Image_:
 
     def save(self, output_path):
         self.image.save(output_path)
+
+    @staticmethod
+    def _load_image(path: str = None, image: Image.Image = None) -> Image.Image:
+        if image is not None:  # Explicitly check for None
+            return image
+        elif path:
+            return Image.open(path)
+        else:
+            raise ValueError("Either 'path' or 'image' must be provided")
 
     def get_image(self):
         return self.image
@@ -103,3 +114,26 @@ class Image_:
         self.image.thumbnail((target_width, target_height))
         self.size = self.image.size
         return self
+    
+    def split(self) -> Tuple['Image_', 'Image_']:
+        logger.debug("Splitting image %s in half", self.path)
+        width, height = self.size
+        half_width = width / 2
+        left_half = self.image.crop((0, 0, half_width-2.5, height))
+        right_half = self.image.crop((half_width+2.5, 0, width, height))
+
+        left_image = Image_(image=left_half)
+        right_image = Image_(image=right_half)
+
+        return left_image, right_image
+    
+    def to_cv2(self) -> np.ndarray:
+        if self.image.mode != 'RGB':
+            self.image = self.image.convert('RGB')
+        cv2_image = np.array(self.image)
+        cv2_image = cv2.cvtColor(cv2_image, cv2.COLOR_RGB2BGR)
+        return cv2_image
+
+    def to_pil(self, cv2_image: np.ndarray) -> Image.Image:
+        cv2_image = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB)
+        return Image.fromarray(cv2_image)
