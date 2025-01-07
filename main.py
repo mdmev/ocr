@@ -28,7 +28,11 @@ from utils.bounding_box_cropper import BoundingBoxCropper
 
 logging.basicConfig(
     level=logging.INFO, 
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler("logs/test.log"),
+    ]
 )
 logger = logging.getLogger(__name__)
 
@@ -59,8 +63,11 @@ def main() -> None:
     )
 
     matcher = BoundingBoxMatcher(distance_threshold=50.0)
+    cont = 0
+    for idx, file_path in enumerate(tqdm(images, desc="Processing images")):
+        if idx >= 20:
+            break
 
-    for file_path in tqdm(images, desc="Processing images"):
         image_name = os.path.basename(file_path)
         if image_name not in output_data:
                 output_data[image_name] = []
@@ -75,22 +82,6 @@ def main() -> None:
         right_detections = yolo_segmenter.run_inference(right)
         left_detections = yolo_segmenter.filter_text_detections(left_detections, exclude_classes=[6])
         right_detections = yolo_segmenter.filter_text_detections(right_detections, exclude_classes=[6])
-
-        right_annotations = yolo_segmenter.annotate_image(right, right_detections)
-        left_annotations = yolo_segmenter.annotate_image(left, left_detections)
-
-        # plot the images
-        fig, ax = plt.subplots(1, 2, figsize=(20, 20))
-        ax[0].imshow(cv2.cvtColor(left_annotations, cv2.COLOR_BGR2RGB))
-        ax[0].set_title("Left Image")
-        ax[0].axis("off")
-
-        ax[1].imshow(cv2.cvtColor(right_annotations, cv2.COLOR_BGR2RGB))
-        ax[1].set_title("Right Image")
-        ax[1].axis("off")
-
-        plt.show()
-
 
         matches_by_class = matcher.match(left_detections, right_detections)
 
@@ -113,34 +104,21 @@ def main() -> None:
             left_image = Image_(image=left_crop_pil)
             right_image = Image_(image=right_crop_pil)
 
-            # plot the images
-            fig, ax = plt.subplots(1, 2, figsize=(20, 20))
-            ax[0].imshow(left_crop)
-            ax[0].set_title("Left Image")
-            ax[0].axis("off")
+            model.set_prompt("extract_raw_spanish")
+            spanish = model.run_inference(left_image, max_retries=1, timeout=15)
+            model.set_prompt("extract_raw_nahuatl")
+            nahuatl = model.run_inference(right_image, max_retries=1, timeout=15)
+            cont += 1
 
-            ax[1].imshow(right_crop)
-            ax[1].set_title("Right Image")
-            ax[1].axis("off")
+            output_data[image_name].append({
+                "spanish": spanish,
+                "nahuatl": nahuatl
+            })
+            save_json(output, output_data)
 
-            plt.show()
+            logger.info(f"Current pairs: {cont}")
+        cost = model.calculate_cost()
+        logger.info(f"Current cost: {cost}")
 
-
-            # model.set_prompt("extract_raw_spanish")
-            # spanish = model.run_inference(left_image, max_retries=1, timeout=15)
-            # model.set_prompt("extract_raw_nahuatl")
-            # nahuatl = model.run_inference(right_image, max_retries=1, timeout=15)
-
-
-            # output_data[image_name].append({
-            #     "spanish": spanish,
-            #     "nahuatl": nahuatl
-            # })
-            # save_json(output, output_data)
-
-            # cost = model.calculate_cost()
-            # logger.info(f"Current cost: {cost}")
-
-    
 if __name__ == "__main__":
     main()
