@@ -6,3 +6,9 @@ datasets/
 exps/
 test.py
 utils/__pycache__/*
+models/__pycache__/base.cpython-310.pyc
+models/__pycache__/claude.cpython-310.pyc
+models/__pycache__/yolo.cpython-310.pyc
+test.json
+test/
+weights/
