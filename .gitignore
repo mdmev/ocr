@@ -10,3 +10,4 @@ models/__pycache__/*
 weights/
 *.json
 test/
+models/__pycache__/claude.cpython-310.pyc

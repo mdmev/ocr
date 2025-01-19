@@ -7,7 +7,9 @@ from models.base import BaseAPI
 class ClaudeAPI(BaseAPI):
     INPUT_COST = 0.000003   # $3/MTok
     OUTPUT_COST = 0.000015  # $15/MTok
-    
+    CACHING_WRITE_COST = 0.00000375  # $3.75/MTok
+    CACHING_READ_COST = 0.0000003  # $0.30/MTok
+
     def __init__(self, model_name: str, prompt_type: str, api_key: str = None, tool: str = None):
         super().__init__(model_name, prompt_type, tool)
         self.api_key = api_key or os.getenv("ANTROPHIC_KEY")
@@ -70,9 +72,12 @@ class ClaudeAPI(BaseAPI):
             return "~ $0.00"
         input_tokens = self.last_message.usage.input_tokens
         output_tokens = self.last_message.usage.output_tokens
-        current_cost = (input_tokens * self.INPUT_COST) + (output_tokens * self.OUTPUT_COST)
+        input_cache_tokens = self.last_message.usage.cache_creation_input_tokens
+        read_cache_tokens = self.last_message.usage.cache_read_input_tokens
+        current_cost = (input_tokens * self.INPUT_COST) + (output_tokens * self.OUTPUT_COST)+ (input_cache_tokens * self.CACHING_WRITE_COST)+ (read_cache_tokens * self.CACHING_READ_COST)
+
         self.total_cost += current_cost
-        return f"~ ${current_cost:.3f}"
+        return f"~ ${current_cost:.10f}"
 
     def reset_cost(self):
         self.total_cost = 0.0
